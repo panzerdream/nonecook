@@ -17,8 +17,12 @@ const userOperations = {
     }
     
     try {
+      // 获取当前用户的openid作为用户ID
+      const { OPENID } = cloud.getWXContext();
+      const userId = OPENID;
+      
       // 创建用户
-      const userResult = await db.collection("users").add({
+      await db.collection("users").doc(userId).set({
         data: {
           nickname,
           avatar: avatar || "",
@@ -26,8 +30,6 @@ const userOperations = {
           createdAt: new Date()
         }
       });
-      
-      const userId = userResult._id;
       
       // 如果没有指定家庭，创建专属家庭
       if (!familyId) {
@@ -93,6 +95,17 @@ const userOperations = {
         data: data
       });
       return { success: true, data: result };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+  
+  // 获取用户openid
+  getOpenId: async (event) => {
+    try {
+      // 获取当前用户的openid
+      const { OPENID } = cloud.getWXContext();
+      return { success: true, data: { openid: OPENID } };
     } catch (error) {
       return { success: false, error: error.message };
     }
@@ -192,17 +205,32 @@ const familyOperations = {
     }
   },
   
-  // 获取家庭信息
+  // 获取家庭信息（支持通过userId获取）
   getFamilyInfo: async (event) => {
-    const { familyId } = event;
+    const { familyId, userId } = event;
     
-    if (!familyId) {
-      return { success: false, error: "家庭ID不能为空" };
+    if (!familyId && !userId) {
+      return { success: false, error: "家庭ID或用户ID不能为空" };
     }
     
     try {
-      const result = await db.collection("families").doc(familyId).get();
-      return { success: true, data: result.data };
+      let familyInfo;
+      
+      if (userId) {
+        // 通过userId获取用户信息，然后获取家庭信息
+        const userResult = await db.collection("users").doc(userId).get();
+        if (!userResult.data || !userResult.data.familyId) {
+          return { success: false, error: "用户没有加入家庭" };
+        }
+        const familyResult = await db.collection("families").doc(userResult.data.familyId).get();
+        familyInfo = familyResult.data;
+      } else {
+        // 直接通过familyId获取家庭信息
+        const familyResult = await db.collection("families").doc(familyId).get();
+        familyInfo = familyResult.data;
+      }
+      
+      return { success: true, data: familyInfo };
     } catch (error) {
       return { success: false, error: error.message };
     }
@@ -397,17 +425,28 @@ const ingredientOperations = {
     }
   },
   
-  // 获取家庭食材列表
+  // 获取家庭食材列表（支持通过userId获取）
   getFamilyIngredients: async (event) => {
-    const { familyId } = event;
+    const { familyId, userId } = event;
     
-    if (!familyId) {
-      return { success: false, error: "家庭ID不能为空" };
+    if (!familyId && !userId) {
+      return { success: false, error: "家庭ID或用户ID不能为空" };
     }
     
     try {
+      let finalFamilyId = familyId;
+      
+      if (userId) {
+        // 通过userId获取用户信息，然后获取家庭ID
+        const userResult = await db.collection("users").doc(userId).get();
+        if (!userResult.data || !userResult.data.familyId) {
+          return { success: false, error: "用户没有加入家庭" };
+        }
+        finalFamilyId = userResult.data.familyId;
+      }
+      
       const result = await db.collection("ingredients")
-        .where({ familyId })
+        .where({ familyId: finalFamilyId })
         .orderBy("createdAt", "desc")
         .get();
       return { success: true, data: result.data };
@@ -524,17 +563,28 @@ const recipeOperations = {
     }
   },
   
-  // 获取家庭食谱列表
+  // 获取家庭食谱列表（支持通过userId获取）
   getFamilyRecipes: async (event) => {
-    const { familyId } = event;
+    const { familyId, userId } = event;
     
-    if (!familyId) {
-      return { success: false, error: "家庭ID不能为空" };
+    if (!familyId && !userId) {
+      return { success: false, error: "家庭ID或用户ID不能为空" };
     }
     
     try {
+      let finalFamilyId = familyId;
+      
+      if (userId) {
+        // 通过userId获取用户信息，然后获取家庭ID
+        const userResult = await db.collection("users").doc(userId).get();
+        if (!userResult.data || !userResult.data.familyId) {
+          return { success: false, error: "用户没有加入家庭" };
+        }
+        finalFamilyId = userResult.data.familyId;
+      }
+      
       const result = await db.collection("recipes")
-        .where({ familyId })
+        .where({ familyId: finalFamilyId })
         .orderBy("createdAt", "desc")
         .get();
       return { success: true, data: result.data };
@@ -595,23 +645,34 @@ const recipeOperations = {
   
   // 推荐食谱（基于现有食材）
   recommendRecipes: async (event) => {
-    const { familyId } = event;
+    const { familyId, userId } = event;
     
-    if (!familyId) {
-      return { success: false, error: "家庭ID不能为空" };
+    if (!familyId && !userId) {
+      return { success: false, error: "家庭ID或用户ID不能为空" };
     }
     
     try {
+      let finalFamilyId = familyId;
+      
+      if (userId) {
+        // 通过userId获取用户信息，然后获取家庭ID
+        const userResult = await db.collection("users").doc(userId).get();
+        if (!userResult.data || !userResult.data.familyId) {
+          return { success: false, error: "用户没有加入家庭" };
+        }
+        finalFamilyId = userResult.data.familyId;
+      }
+      
       // 获取家庭所有食材
       const ingredientsResult = await db.collection("ingredients")
-        .where({ familyId })
+        .where({ familyId: finalFamilyId })
         .get();
       
       const availableIngredients = ingredientsResult.data;
       
       // 获取所有食谱
       const recipesResult = await db.collection("recipes")
-        .where({ familyId })
+        .where({ familyId: finalFamilyId })
         .get();
       
       const allRecipes = recipesResult.data;
