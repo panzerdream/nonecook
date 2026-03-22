@@ -1,0 +1,19 @@
+{
+  "name": "nonecookService",
+  "version": "1.0.0",
+  "description": "nonecook小程序云函数服务",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "nonecook",
+    "cloudfunction",
+    "wechat"
+  ],
+  "author": "",
+  "license": "MIT"
+}
