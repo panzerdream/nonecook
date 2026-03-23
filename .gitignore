@@ -1,0 +1,40 @@
+# macOS
+.DS_Store
+
+# 微信开发者工具
+project.private.config.json
+
+# 本地配置文件
+miniprogram/config.local.js
+
+# 云函数依赖
+cloudfunctions/*/node_modules/
+cloudfunctions/*/package-lock.json
+
+# npm依赖
+miniprogram/node_modules/
+miniprogram/package-lock.json
+
+# 日志文件
+*.log
+logs/
+
+# 编辑器临时文件
+*.swp
+*.swo
+*~
+
+# 构建产物
+dist/
+build/
+
+# 测试文件
+coverage/
+
+# IDE文件
+.vscode/
+.idea/
+
+# 操作系统文件
+Thumbs.db
+ehthumbs.db
