@@ -9,20 +9,22 @@ const db = cloud.database();
 const userOperations = {
   // 创建用户并自动创建专属家庭
   createUser: async (event) => {
-    const { nickname, avatar, familyId } = event.data;
+    const { nickname, avatar, familyId, userId } = event.data;
     
     // 必填字段验证
     if (!nickname) {
       return { success: false, error: "用户昵称不能为空" };
     }
     
+    if (!userId) {
+      return { success: false, error: "用户ID不能为空" };
+    }
+    
     try {
-      // 获取当前用户的openid作为用户ID
-      const { OPENID } = cloud.getWXContext();
-      const userId = OPENID;
+      // 使用传入的自定义用户ID
       
       // 创建用户
-      await db.collection("users").doc(userId).set({
+      const userResult = await db.collection("users").doc(userId).set({
         data: {
           nickname,
           avatar: avatar || "",
