@@ -184,12 +184,7 @@ nonecook/
 wx cloud deploy function nonecookService
 ```
 
-## 项目截图
 
-![首页](https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=微信小程序首页%20家庭食材管理%20棕色主题%20底部导航栏&image_size=landscape_16_9)
-![我的冰箱](https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=微信小程序我的冰箱页面%20食材列表%20棕色主题&image_size=landscape_16_9)
-![菜谱页面](https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=微信小程序菜谱页面%20食材充足显示彩色%20不足显示灰度&image_size=landscape_16_9)
-![个人中心](https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=微信小程序个人中心页面%20家庭管理%20用户信息&image_size=landscape_16_9)
 
 ## 许可证
 
@@ -201,4 +196,4 @@ MIT License
 
 ## 联系方式
 
-如有问题，请联系项目维护者。
+如有问题，请联系panzerdream@163.com
