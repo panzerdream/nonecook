@@ -9,7 +9,7 @@ const db = cloud.database();
 const userOperations = {
   // 创建用户并自动创建专属家庭
   createUser: async (event) => {
-    const { nickname, avatar, familyId, userId } = event.data;
+    const { nickname, avatar, familyId, userId, phone } = event.data;
     
     // 必填字段验证
     if (!nickname) {
@@ -20,13 +20,27 @@ const userOperations = {
       return { success: false, error: "用户ID不能为空" };
     }
     
+    if (!phone) {
+      return { success: false, error: "手机号不能为空" };
+    }
+    
     try {
+      // 检查手机号是否已存在
+      const existingUser = await db.collection("users")
+        .where({ phone: phone })
+        .get();
+      
+      if (existingUser.data.length > 0) {
+        return { success: false, error: "该手机号已被注册" };
+      }
+      
       // 使用传入的自定义用户ID
       
       // 创建用户
       const userResult = await db.collection("users").doc(userId).set({
         data: {
           nickname,
+          phone,
           avatar: avatar || "",
           familyId: familyId || null,
           createdAt: new Date()
@@ -97,6 +111,38 @@ const userOperations = {
         data: data
       });
       return { success: true, data: result };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+  
+  // 用户登录
+  login: async (event) => {
+    const { nickname, phone } = event.data;
+    
+    // 必填字段验证
+    if (!nickname) {
+      return { success: false, error: "用户昵称不能为空" };
+    }
+    
+    if (!phone) {
+      return { success: false, error: "手机号不能为空" };
+    }
+    
+    try {
+      // 根据昵称和手机号查找用户
+      const result = await db.collection("users")
+        .where({
+          nickname: nickname,
+          phone: phone
+        })
+        .get();
+      
+      if (result.data.length === 0) {
+        return { success: false, error: "用户名或手机号错误" };
+      }
+      
+      return { success: true, data: result.data[0] };
     } catch (error) {
       return { success: false, error: error.message };
     }
